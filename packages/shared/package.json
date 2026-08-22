@@ -1,0 +1,58 @@
+{
+  "name": "@coploy/shared",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Shared types, error classes, middleware, and utilities for the Coploy platform",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./errors": {
+      "types": "./build/errors/index.d.ts",
+      "default": "./build/errors/index.js"
+    },
+    "./middleware": {
+      "types": "./build/middleware/index.d.ts",
+      "default": "./build/middleware/index.js"
+    },
+    "./types": {
+      "types": "./build/types/index.d.ts",
+      "default": "./build/types/index.js"
+    },
+    "./utils": {
+      "types": "./build/utils/index.d.ts",
+      "default": "./build/utils/index.js"
+    },
+    "./env": {
+      "types": "./build/env/index.d.ts",
+      "default": "./build/env/index.js"
+    },
+    "./contracts": {
+      "types": "./build/contracts/index.d.ts",
+      "default": "./build/contracts/index.js"
+    },
+    "./crypto": {
+      "types": "./build/crypto/index.d.ts",
+      "default": "./build/crypto/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/errors/index.ts src/middleware/index.ts src/types/index.ts src/utils/index.ts src/env/index.ts src/contracts/index.ts src/crypto/index.ts --format cjs --dts --clean --out-dir build",
+    "dev": "tsup src/index.ts src/errors/index.ts src/middleware/index.ts src/types/index.ts src/utils/index.ts src/env/index.ts src/contracts/index.ts src/crypto/index.ts --format cjs --dts --watch --out-dir build",
+    "clean": "rm -rf build .turbo",
+    "lint": "tsc --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.0"
+  }
+}

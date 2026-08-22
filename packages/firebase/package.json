@@ -1,0 +1,21 @@
+{
+  "name": "@coploy/firebase",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Firebase Admin SDK, Firestore helpers, and Storage utilities for the Coploy platform",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --dts --clean --out-dir build",
+    "dev": "tsup src/index.ts --format cjs --dts --watch --out-dir build",
+    "clean": "rm -rf build .turbo",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.6.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.0"
+  }
+}

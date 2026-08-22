@@ -1,0 +1,248 @@
+###############################################################################
+# Coploy ATS — distribuição OPEN (ADR-007)
+#
+# O ATS completo rodando na SUA máquina, com os SEUS dados:
+#   Postgres (dados) + MinIO (arquivos) + Redis (cache)
+#   core (API) + ats (painel da empresa)
+#
+# O que NÃO está aqui, de propósito: o Motor Coploy (entrevista com IA,
+# orchestrator, ai-engine, WhatsApp). Ele é plugin — integra por contrato de
+# entrada/saída (webhooks de resultado). Sem ele, isto é um ATS completo:
+# vagas, pipeline, candidatos, time, e-mails, permissões.
+#
+# Uso:
+#   1. cp .env.open.example .env.open   (e ajuste os segredos)
+#   2. docker compose -f docker-compose.open.yml --env-file .env.open up -d --build
+#   3. abra http://localhost:8080 e crie sua conta em /criar-conta
+###############################################################################
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-coploy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB_NAME:-coploy}
+    ports:
+      # publicado pra inspecionar o banco da máquina host (psql, TablePlus, DBeaver)
+      - "5432:5432"
+    volumes:
+      - open_postgres_data:/var/lib/postgresql/data
+    networks:
+      - coploy-open
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-coploy} -d ${POSTGRES_DB_NAME:-coploy}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-coploy}
+    volumes:
+      - open_redis_data:/data
+    networks:
+      - coploy-open
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-coploy}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-coploy}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-coploy}
+    volumes:
+      - open_rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - coploy-open
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY is required}
+    ports:
+      # publicado porque o NAVEGADOR busca os arquivos direto daqui
+      # (logo da empresa, currículo) — ver MINIO_PUBLIC_URL no core
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - open_minio_data:/data
+    networks:
+      - coploy-open
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  core:
+    build:
+      context: .
+      dockerfile: apps/core/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports:
+      - "3333:3333"
+    environment:
+      INFRA_PROVIDER: selfhosted
+      NODE_ENV: production
+      SERVER_PORT: 3333
+      POSTGRES_URL: postgresql://${POSTGRES_USER:-coploy}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_NAME:-coploy}
+      POSTGRES_SCHEMA: ${POSTGRES_SCHEMA:-public}
+      POSTGRES_SSL: "false"
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET:-coploy}
+      MINIO_USE_SSL: "false"
+      # URL que o navegador usa pros arquivos — endereço PUBLICADO do minio
+      MINIO_PUBLIC_URL: ${PUBLIC_BASE_URL:-http://localhost}:9000/${MINIO_BUCKET:-coploy}
+      BETTERAUTH_SECRET: ${BETTERAUTH_SECRET:?BETTERAUTH_SECRET is required}
+      BETTERAUTH_URL: ${PUBLIC_BASE_URL:-http://localhost}:3333
+      # As origens dos fronts (painel :8080, portal de vagas :8081) precisam
+      # ser confiadas pelo BetterAuth, senão o login responde "Invalid origin"
+      AUTH_TRUSTED_ORIGINS: ${PUBLIC_BASE_URL:-http://localhost}:8080,${PUBLIC_BASE_URL:-http://localhost}:8081
+      REDIS_URL: redis://:${REDIS_PASSWORD:-coploy}@redis:6379
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-coploy}:${RABBITMQ_PASSWORD:-coploy}@rabbitmq:5672
+      CORE_API_KEY: ${CORE_API_KEY:?CORE_API_KEY is required}
+      # E-mail transacional (convite, reprovação, anti-ghosting). Opcional:
+      # sem a chave o ATS funciona e os envios são pulados.
+      POSTMARK_API_KEY: ${POSTMARK_API_KEY:-}
+      # ------------------------------------------------------------------
+      # MOTOR (plugin). Sem o plugin instalado, estes endereços não existem
+      # e as funções de entrevista ficam desligadas na interface.
+      # Com o plugin: aponte para os serviços dele.
+      # ------------------------------------------------------------------
+      # Sem o plugin, o ATS degrada com elegância: telas de entrevista viram
+      # estado vazio + convite, e Hunting/Créditos (superfícies SaaS) somem.
+      # Instalou o Motor? MOTOR_ENABLED=true + as URLs abaixo no .env.open.
+      MOTOR_ENABLED: ${MOTOR_ENABLED:-false}
+      # Servidor de licenças do plugin (tela Servidor → Plugin). Default =
+      # produção da Coploy; só mude se a Coploy indicar outro endereço.
+      MOTOR_LICENSE_SERVER_URL: ${MOTOR_LICENSE_SERVER_URL:-}
+      ENGINE_URL: ${MOTOR_ENGINE_URL:-http://motor-nao-instalado:1}
+      INTEGRATION_URL: ${MOTOR_ORCHESTRATOR_URL:-http://motor-nao-instalado:1}
+      # Base dos links de entrevista (app web do Motor). Sem o plugin os
+      # links não resolvem — mas nenhum é gerado, porque não há entrevista.
+      INTERVIEW_BASE_URL: ${MOTOR_INTERVIEW_BASE_URL:-http://motor-nao-instalado:1}
+      # ------------------------------------------------------------------
+      # OTS 0.2 — emissão de attestation de entrevista verificada (opcional).
+      # Modelo federado: ESTA instância vira emissora, assinando com a própria
+      # chave — sem autoridade central. Gerar a chave:
+      #   openssl genpkey -algorithm ed25519
+      # OTS_ISSUER_BASE_URL = URL pública deste core (o verificador busca o
+      # JWKS em {iss}/.well-known/ots/jwks.json). Sem as duas, emissão
+      # responde 503 e o resto do sistema não muda.
+      OTS_SIGNING_KEY: ${OTS_SIGNING_KEY:-}
+      OTS_SIGNING_KID: ${OTS_SIGNING_KID:-ots-2026-1}
+      OTS_ISSUER_BASE_URL: ${OTS_ISSUER_BASE_URL:-}
+    networks:
+      - coploy-open
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "node -e \"const net=require('net');const s=net.connect(3333,'127.0.0.1',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),5000);\""
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  ats:
+    build:
+      context: .
+      dockerfile: web/ats/Dockerfile
+      args:
+        VITE_API_CORE_URL: ${PUBLIC_BASE_URL:-http://localhost}:3333
+        VITE_AUTH_PROVIDER: betterauth
+        VITE_BETTERAUTH_URL: ${PUBLIC_BASE_URL:-http://localhost}:3333
+        # aba Divulgação aponta pro portal público (serviço careers)
+        VITE_CAREERS_URL: ${PUBLIC_BASE_URL:-http://localhost}:8081
+    restart: unless-stopped
+    depends_on:
+      core:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    networks:
+      - coploy-open
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "wget -q --spider http://127.0.0.1/ || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  # Portal público de vagas (careers) — a porta de entrada do candidato.
+  # É onde a vaga publicada vira link compartilhável e onde o candidato cria a
+  # conta e se candidata. Funciona SEM o Motor: candidatura entra direto no
+  # pipeline; com o plugin instalado, a entrevista por IA soma-se ao fluxo.
+  careers:
+    build:
+      context: .
+      dockerfile: web/careers/Dockerfile
+      args:
+        VITE_API_CORE_URL: ${PUBLIC_BASE_URL:-http://localhost}:3333
+        # Provedor de origem do perfil portátil OTS ("importar minha
+        # trajetória"). Default: a rede Coploy (homolog enquanto o binding
+        # não sobe pra produção). Vazio desliga o card.
+        VITE_OTS_PROFILE_PROVIDER: ${OTS_PROFILE_PROVIDER:-https://api-hml.coploy.io/mcp-server}
+    restart: unless-stopped
+    depends_on:
+      core:
+        condition: service_healthy
+    ports:
+      - "8081:80"
+    networks:
+      - coploy-open
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "wget -q --spider http://127.0.0.1/ || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # A ÁREA COMPLETA do candidato (web/candidate — currículo vivo, trajetória,
+  # entrevista de perfil) NÃO faz parte da distribuição open, POR DECISÃO
+  # (ADR-007): ela é o lado-candidato da REDE Coploy, o mesmo ativo do hunting.
+  # A instância open guarda os candidatos DELA: conta local + candidatura no
+  # portal (serviço `careers`), e acompanhamento em /minhas-candidaturas lá
+  # mesmo. O elo entre os dois mundos é o OTS — o candidato importa o próprio
+  # perfil na hora de se candidatar, de onde quer que ele more.
+  # ---------------------------------------------------------------------------
+
+volumes:
+  open_postgres_data:
+  open_redis_data:
+  open_rabbitmq_data:
+  open_minio_data:
+
+networks:
+  coploy-open:

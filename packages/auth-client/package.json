@@ -1,0 +1,63 @@
+{
+  "name": "@coploy/auth-client",
+  "version": "1.1.0",
+  "description": "Pluggable auth client for Coploy frontends - supports Firebase Auth and BetterAuth",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.mjs",
+      "require": "./build/index.js"
+    },
+    "./firebase": {
+      "types": "./build/providers/firebase.d.ts",
+      "import": "./build/providers/firebase.mjs",
+      "require": "./build/providers/firebase.js"
+    },
+    "./betterauth": {
+      "types": "./build/providers/betterauth.d.ts",
+      "import": "./build/providers/betterauth.mjs",
+      "require": "./build/providers/betterauth.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/providers/firebase.ts src/providers/betterauth.ts --format cjs,esm --dts --clean --out-dir build --external firebase --external better-auth --external @better-auth/client",
+    "dev": "tsup src/index.ts src/providers/firebase.ts src/providers/betterauth.ts --format cjs,esm --dts --watch --out-dir build --external firebase --external better-auth --external @better-auth/client",
+    "clean": "rm -rf build .turbo",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "firebase": "^11.0.0",
+    "better-auth": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "firebase": {
+      "optional": true
+    },
+    "better-auth": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "firebase": "^11.7.1",
+    "better-auth": "^1.4.18",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Coploy-Team/ATS-AI.git",
+    "directory": "packages/auth-client"
+  },
+  "files": [
+    "build",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

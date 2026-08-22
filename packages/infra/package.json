@@ -1,0 +1,58 @@
+{
+  "name": "@coploy/infra",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Infrastructure abstraction layer - pluggable adapters for GCP, self-hosted, AWS, Azure",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "default": "./build/index.js"
+    },
+    "./gcp": {
+      "types": "./build/adapters/gcp/index.d.ts",
+      "import": "./build/adapters/gcp/index.js",
+      "require": "./build/adapters/gcp/index.js",
+      "default": "./build/adapters/gcp/index.js"
+    },
+    "./selfhosted": {
+      "types": "./build/adapters/selfhosted/index.d.ts",
+      "import": "./build/adapters/selfhosted/index.js",
+      "require": "./build/adapters/selfhosted/index.js",
+      "default": "./build/adapters/selfhosted/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/adapters/gcp/index.ts src/adapters/selfhosted/index.ts --format cjs --dts --clean --out-dir build",
+    "dev": "tsup src/index.ts src/adapters/gcp/index.ts src/adapters/selfhosted/index.ts --format cjs --dts --watch --out-dir build",
+    "clean": "rm -rf build .turbo",
+    "lint": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate --config drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^5.3.0",
+    "@google-cloud/tasks": "^6.2.1",
+    "amqplib": "^0.10.9",
+    "better-auth": "^1.4.18",
+    "zod": "^3.24.2",
+    "drizzle-orm": "^0.44.5",
+    "firebase-admin": "^13.6.1",
+    "jose": "^6.1.3",
+    "minio": "^8.0.6",
+    "pg": "^8.16.3",
+    "@coploy/domain": "*",
+    "@coploy/shared": "*"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7",
+    "@types/pg": "^8.15.6",
+    "drizzle-kit": "^0.31.6",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.0"
+  }
+}
