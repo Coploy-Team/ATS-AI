@@ -1,0 +1,106 @@
+import { z } from 'zod'
+
+export const InterviewType = {
+	ALL: 'all',
+	EVALUATION: 'evaluation',
+	INTERVIEW: 'interview',
+	EMOTIONAL: 'emotional',
+} as const
+
+export const CareerLevel = {
+	ALL: 'all',
+	ESTAGIARIO: 'Estagiário',
+	TRAINEE: 'Trainee',
+	JUNIOR: 'Júnior',
+	ASSISTENTE: 'Assistente',
+	OPERACIONAL: 'Operacional',
+	ASSOCIADO: 'Associado',
+	TECNICO: 'Técnico',
+	ANALISTA: 'Analista',
+	PLENO: 'Pleno',
+	SENIOR: 'Sênior',
+	ESPECIALISTA: 'Especialista',
+	CONSULTOR_SENIOR: 'Consultor Sênior',
+	COORDENADOR: 'Coordenador',
+	GERENTE: 'Gerente',
+	GERENTE_PROJETO: 'Gerente de Projeto',
+	CHEFE: 'Chefe',
+	DIRETOR: 'Diretor',
+	DIRETOR_OPERACOES: 'Diretor de Operações (COO)',
+	DIRETOR_FINANCEIRO: 'Diretor Financeiro (CFO)',
+	CTO: 'Chief Technology Officer (CTO)',
+	CMO: 'Chief Marketing Officer (CMO)',
+	CEO: 'Diretor Executivo (CEO)',
+	NAO_INFORMADO: 'Não Informado',
+} as const
+
+export const CountryMapping = {
+	brazil: 'brasil',
+	brasil: 'brasil',
+	'united states': 'estados unidos',
+	'united states of america': 'estados unidos',
+	usa: 'estados unidos',
+	us: 'estados unidos',
+	'estados unidos': 'estados unidos',
+	portugal: 'portugal',
+	spain: 'espanha',
+	espanha: 'espanha',
+	france: 'frança',
+	frança: 'frança',
+	italy: 'itália',
+	itália: 'itália',
+	'united kingdom': 'reino unido',
+	uk: 'reino unido',
+	'reino unido': 'reino unido',
+	germany: 'alemanha',
+	alemanha: 'alemanha',
+	canada: 'canadá',
+	canadá: 'canadá',
+	australia: 'austrália',
+	austrália: 'austrália',
+	chile: 'chile',
+	colombia: 'colômbia',
+	colômbia: 'colômbia',
+	mexico: 'méxico',
+	méxico: 'méxico',
+	peru: 'peru',
+	argentina: 'argentina',
+} as const
+
+export const interviewTypeEnum = z.enum([
+	InterviewType.ALL,
+	InterviewType.EVALUATION,
+	InterviewType.INTERVIEW,
+	InterviewType.EMOTIONAL,
+])
+
+export const careerLevelEnum = z.enum([
+	CareerLevel.ALL,
+	CareerLevel.ESTAGIARIO,
+	CareerLevel.TRAINEE,
+	CareerLevel.JUNIOR,
+	CareerLevel.ASSISTENTE,
+	CareerLevel.OPERACIONAL,
+	CareerLevel.ASSOCIADO,
+	CareerLevel.TECNICO,
+	CareerLevel.ANALISTA,
+	CareerLevel.PLENO,
+	CareerLevel.SENIOR,
+	CareerLevel.ESPECIALISTA,
+	CareerLevel.CONSULTOR_SENIOR,
+	CareerLevel.COORDENADOR,
+	CareerLevel.GERENTE,
+	CareerLevel.GERENTE_PROJETO,
+	CareerLevel.CHEFE,
+	CareerLevel.DIRETOR,
+	CareerLevel.DIRETOR_OPERACOES,
+	CareerLevel.DIRETOR_FINANCEIRO,
+	CareerLevel.CTO,
+	CareerLevel.CMO,
+	CareerLevel.CEO,
+	CareerLevel.NAO_INFORMADO,
+])
+
+export type InterviewTypeType =
+	(typeof InterviewType)[keyof typeof InterviewType]
+export type CareerLevelType = (typeof CareerLevel)[keyof typeof CareerLevel]

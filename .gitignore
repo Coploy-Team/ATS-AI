@@ -1,0 +1,12 @@
+node_modules
+build
+dist
+.turbo
+.env
+.env.*
+# exemplos são documentação — o resto de .env.* nunca entra
+!.env.example
+!.env.*.example
+!.env.open.example
+*.local
+.DS_Store

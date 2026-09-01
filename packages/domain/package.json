@@ -1,0 +1,25 @@
+{
+  "name": "@coploy/domain",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Domain types — pure business entities and value objects",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.mjs",
+      "require": "./build/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean --out-dir build",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch --out-dir build",
+    "clean": "rm -rf build .turbo",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.0"
+  }
+}
