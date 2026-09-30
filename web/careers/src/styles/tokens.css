@@ -1,0 +1,291 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+/**
+ * Tokens do Coploy ATS — fonte de verdade (design-fundacao §3/§5).
+ * Regra de ouro das cores de dado: são PREENCHIMENTO (barras/segmentos/dots),
+ * nunca texto. No light usam o matiz da marca levemente aprofundado; versões
+ * `-fg` existem só para quando a cor carrega texto/ícone (contraste AA).
+ */
+:root {
+	/* superfícies */
+	--bg: #f7f8fa;
+	--surface: #ffffff;
+	--card: #ffffff;
+	--card-alt: #f3f4f7;
+	--border: #e5e7eb;
+	--border-soft: #eef0f3;
+	--hover: #f2f4f7;
+	--sel: #f7fbe8;
+
+	/* texto */
+	--text: #0f1014;
+	--text-2: #525258;
+	--muted: #8b8f97;
+
+	/* marca — lime */
+	--lime: #cdfb12; /* fill/CTA — texto por cima é sempre --lime-ink */
+	--lime-ink: #1a2005;
+	--lime-fg: #4d7c0f; /* lime como TEXTO/ícone no light */
+	--lime-mid: #a3e635; /* lime como BORDA/focus no light (a marca, visível sobre branco) */
+	--lime-soft: #eef8c8;
+	/*
+	 * Brilho de fundo do shell, por tema.
+	 *
+	 * A mesma lime pura que funciona no escuro vira mancha amarelada sobre o
+	 * branco — por isso o efeito só existia no dark.
+	 *
+	 * Três tentativas até chegar aqui, todas olhadas no navegador. A lime
+	 * FECHADA (#4d7c0f) precisa de opacidade alta para aparecer e vira borrão
+	 * cáqui atrás dos botões. A lime MÉDIA (#a3e635) num círculo sólido lê
+	 * limpa, mas pesada: o que incomoda não é a cor, é a BORDA — círculo
+	 * chapado sobre branco vira mancha com contorno, por mais desfocado que
+	 * esteja. O radial resolve dissolvendo: mesma presença, sem limite visível.
+	 *
+	 * O escuro fica no círculo sólido de sempre. Lá a lime brilha em vez de
+	 * manchar, 6% basta, e não havia nada a consertar.
+	 */
+	--glow-layer: radial-gradient(circle, #a3e635 0%, transparent 68%);
+	--glow-opacity: 0.3;
+
+	/* cores de dado (fills) */
+	--data-violet: #a78bfa; /* candidatura — entrada fria do funil */
+	--data-pink: #f699dc;
+	--data-cyan: #2bd9d2;
+	--data-yellow: #f5d648;
+	--data-done: #43464d; /* etapa final/contratado nas barras */
+	--data-track: #e2e4e9; /* trilho vazio */
+	/* contratado: lime fechado, pra ser o fim da escala e não competir com aprovado */
+	--lime-deep: #65a30d;
+
+	/* alertas */
+	--amber: #d97706;
+	--amber-soft: #fdf1de;
+	--danger: #dc2626;
+	--danger-soft: #fdeaea;
+
+	--shadow-pop: 0 8px 24px -6px rgba(15, 16, 20, 0.18), 0 2px 6px -2px rgba(15, 16, 20, 0.1);
+}
+
+.dark {
+	/**
+	 * Rampa NEUTRA (chroma 0) da referência do produto (shadcn neutral dark).
+	 * O "card flutuando" é RELACIONAL: só funciona com o fundo quase preto
+	 * (0.145) contra o card (0.205) e borda translúcida — mexer apenas no
+	 * card sobre um fundo claro não reproduz o efeito. Valores direto da
+	 * referência; o azulado antigo (#0f1014/#1a1c20/#2a2d33) saiu.
+	 */
+	--bg: oklch(0.145 0 0);
+	--surface: oklch(0.205 0 0);
+	--card: oklch(0.205 0 0);
+	--card-alt: oklch(0.269 0 0);
+	--border: oklch(1 0 0 / 10%);
+	--border-soft: oklch(1 0 0 / 6%);
+	--hover: oklch(0.269 0 0);
+	--sel: #20250f;
+
+	--text: #f3f4f6;
+	--text-2: #a0a3a8;
+	--muted: #6f747c;
+
+	--lime: #cdfb12;
+	--lime-ink: #1a2005;
+	--lime-fg: #cdfb12;
+	--lime-mid: #cdfb12;
+	--lime-soft: #242c0c;
+	--glow-layer: #cdfb12;
+	--glow-opacity: 0.06;
+
+	--data-violet: #c4b5fd;
+	--data-pink: #f699dc;
+	--data-cyan: #60f9f4;
+	--data-yellow: #ffea83;
+	--data-done: #b8bcc4;
+	--data-track: oklch(0.269 0 0);
+	--lime-deep: #a3e635;
+
+	--amber: #f0b64a;
+	--amber-soft: #2d2410;
+	--danger: #f87171;
+	--danger-soft: #2d1618;
+
+	--shadow-pop: 0 10px 28px -8px rgba(0, 0, 0, 0.6), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+}
+
+@theme inline {
+	/**
+	 * Sora na UI inteira (decisão do produto, comparada lado a lado com
+	 * Urbanist na tabela densa): é a fonte que o dashboard já renderiza —
+	 * continuidade de marca. Peso base 400 (o dashboard usa 300, fraco demais
+	 * pros 13px da tabela). --font-display existe só como intenção semântica;
+	 * hoje aponta pra mesma família com peso maior nos títulos.
+	 */
+	--font-sans: 'Sora', system-ui, sans-serif;
+	--font-display: 'Sora', sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-card: var(--card);
+	--color-card-alt: var(--card-alt);
+	--color-border: var(--border);
+	--color-border-soft: var(--border-soft);
+	--color-hover: var(--hover);
+	--color-sel: var(--sel);
+	--color-text: var(--text);
+	--color-text-2: var(--text-2);
+	--color-muted: var(--muted);
+	--color-lime: var(--lime);
+	--color-lime-ink: var(--lime-ink);
+	--color-lime-fg: var(--lime-fg);
+	--color-lime-soft: var(--lime-soft);
+	/* faltava: sem esta linha `border-lime-mid` não existia como classe e o
+	   Tailwind caía no border-color default (preto), deixando uma borda escura
+	   em todo banner, hover de card e badge de nota */
+	--color-lime-mid: var(--lime-mid);
+	--color-data-violet: var(--data-violet);
+	--color-lime-deep: var(--lime-deep);
+	--color-data-pink: var(--data-pink);
+	--color-data-cyan: var(--data-cyan);
+	--color-data-yellow: var(--data-yellow);
+	--color-data-done: var(--data-done);
+	--color-data-track: var(--data-track);
+	--color-amber: var(--amber);
+	--color-amber-soft: var(--amber-soft);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+
+	--radius-md: 8px;
+	--radius-lg: 10px;
+	--radius-xl: 14px;
+}
+
+html,
+body,
+#root {
+	height: 100%;
+}
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: 14px;
+	-webkit-font-smoothing: antialiased;
+	color-scheme: light;
+}
+
+.dark body {
+	color-scheme: dark;
+}
+
+/*
+ * O POPUP DO <select> no Windows.
+ *
+ * A lista de opções não é desenhada pelo navegador, é do sistema — e ela lê o
+ * `color-scheme` do elemento, não o CSS do app. Com a declaração só no `body`,
+ * o Windows abria a lista em BRANCO com texto quase invisível no tema escuro
+ * (no macOS não aparecia, que foi por isso que passou).
+ *
+ * Declarar na raiz cobre a herança, e pintar `option` explicitamente cobre o
+ * caso em que o sistema ignora o esquema e usa o próprio padrão.
+ */
+:root {
+	color-scheme: light;
+}
+
+.dark {
+	color-scheme: dark;
+}
+
+.dark select,
+.dark option {
+	background-color: var(--surface);
+	color: var(--text);
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--font-display);
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+
+.font-num {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+/* foco visível: a assinatura lime também é acessibilidade.
+   Ring com gap da cor do fundo (não outline com offset — ficava um aro
+   grosso destacado em elementos com borda própria, ex.: busca do topbar).
+   NUNCA setar border-radius aqui — mutava o raio do elemento focado. */
+:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0 0 2px var(--bg),
+		0 0 0 4px var(--lime-mid);
+}
+
+/* Campos de texto: foco é a borda no verde DA MARCA + halo suave — sem
+   outline duplicado e sem tocar no raio (feedback do produto, 2 rounds). */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+	outline: none;
+	border-color: var(--lime-mid);
+	box-shadow: 0 0 0 3px var(--lime-soft);
+}
+
+::selection {
+	background: var(--lime);
+	color: var(--lime-ink);
+}
+
+/* scrollbar discreta no padrão do admin */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 6px;
+	border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/*
+ * O ponteiro de mão em botão.
+ *
+ * O Tailwind v4 tirou `cursor: pointer` de `button` do preflight — a decisão
+ * deles é seguir o padrão do HTML, que é seta. O efeito no produto é que todo
+ * elemento clicável perdeu o sinal de que É clicável: o cartão de candidato
+ * abria a vaga e o ponteiro não mudava, então não havia como saber que dava
+ * para clicar.
+ *
+ * Uma regra aqui vale mais que `cursor-pointer` repetido em cada componente —
+ * e o próximo botão nasce certo, em vez de nascer com o mesmo defeito.
+ */
+@layer base {
+	button:not(:disabled),
+	[role='button']:not([aria-disabled='true']),
+	summary {
+		cursor: pointer;
+	}
+}

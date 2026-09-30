@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/png" href="/src/assets/coploy_logo.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Coploy</title>
+		<!--
+			WebMCP ("Preencher com o seu agente") é origin trial no Chrome: o token é
+			POR ORIGEM. Quem liga VITE_WEBMCP=true cola o token da própria origem aqui:
+			<meta http-equiv="origin-trial" content="SEU_TOKEN" />
+		-->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Urbanist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+			rel="stylesheet"
+		/>
+		<script>
+			// Anti-FOUC: ESCURO é o padrão do produto (plano E, 2026-09-04);
+			// claro só se a pessoa escolheu DEPOIS da mudança (chave .v2 — a
+			// preferência antiga não conta, senão ninguém veria o padrão novo).
+			try {
+				if (localStorage.getItem('coploy.ats.theme.v2') !== 'light') {
+					document.documentElement.classList.add('dark')
+				}
+			} catch {
+				document.documentElement.classList.add('dark')
+			}
+		</script>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>

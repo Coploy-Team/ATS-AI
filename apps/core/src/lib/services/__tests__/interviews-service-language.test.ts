@@ -1,0 +1,272 @@
+import { createInterviewsService } from '../interviews-service'
+import { createMockInfra } from './mock-infra'
+
+// env vars provided by jest.setup.ts
+
+describe('createInterviewsService — language evaluation fields', () => {
+	const COMPANY_ID = 'company-123'
+	const USER_ID = 'user-abc'
+	const JOB_ID = 'job-xyz'
+	const JOB_APPLIED_ID = 'jobapplied-999'
+
+	let infra: ReturnType<typeof createMockInfra>
+	let service: ReturnType<typeof createInterviewsService>
+
+	beforeEach(() => {
+		infra = createMockInfra()
+		service = createInterviewsService(infra)
+	})
+
+	// Scenario 4: getCandidateDetails exposes evaluateLanguage + languageEvaluation
+	describe('getCandidateDetails', () => {
+		const userData = {
+			display_name: 'Ana Silva',
+			email: 'ana@example.com',
+			phone_number: null,
+			photo_url: null,
+			interview_tags: [],
+		}
+
+		const finishedInterview = {
+			id: 'interview-1',
+			companyId: COMPANY_ID,
+			finished: true,
+			date: new Date('2024-04-03').toISOString(),
+			dateSelect: null,
+			name: 'Ana Silva',
+			user_ref: { id: USER_ID, path: `users/${USER_ID}` },
+			job_applied_ref: {
+				id: JOB_APPLIED_ID,
+				path: `users/${USER_ID}/jobsApplied/${JOB_APPLIED_ID}`,
+			},
+			job_ref: { id: JOB_ID },
+			candidateStatus: 'Pending',
+		}
+
+		function makeJobApplied(overrides: Record<string, unknown> = {}) {
+			return {
+				id: JOB_APPLIED_ID,
+				appliedTime: new Date('2024-04-01').toISOString(),
+				companyOwner: null,
+				userApplied: null,
+				jobApplied: { id: JOB_ID },
+				isPracticing: false,
+				finished: true,
+				finishedTime: new Date('2024-04-03').toISOString(),
+				candidateStatus: 'Pending',
+				batchProcessing: null,
+				avaliacaoFinal: null,
+				exitJobResult: null,
+				whatsappTriagemResult: null,
+				interview: {
+					id: 'int-1',
+					dateTime: null,
+					generalFeedback: 'Bom candidato',
+					info: [
+						{
+							id: 'q1',
+							question: 'Q1',
+							answer: 'A1',
+							score: 8,
+							languageScore: 7.5,
+							languageFeedback: 'Boa fluência',
+							languageAnalise: 'Nível B2',
+						},
+					],
+					additional: [],
+					job: 'Dev Backend',
+					leveljob: 'Pleno',
+					recomentation: null,
+					score: '8.00',
+					state: true,
+					scom: 8,
+					sres: 8,
+					stec: 8,
+					generalStrengths: null,
+					generalImprovement: null,
+					aderencia_descricao: 8,
+					alinhamento_responsabilidades: 8,
+					requisitos_atendidos: 8,
+					alinhamento_nivel: 8,
+					gap_para_proximo_nivel: 8,
+					estruturacao: 8,
+					exemplificacao: 8,
+					profundidade: 8,
+					nivel_confianca: 8,
+					cheat: null,
+				},
+				...overrides,
+			}
+		}
+
+		it('exposes evaluateLanguage=true and languageEvaluation when the job flag is set and analysis ran', async () => {
+			infra.userRepository.getUser.mockResolvedValue(userData as never)
+			infra.candidateRepository.listCompanyInterviews.mockResolvedValue([finishedInterview] as never)
+			infra.candidateRepository.getJobApplied.mockResolvedValue(
+				makeJobApplied({
+					languageEvaluation: {
+						score: 7.8,
+						nivel: 'B2',
+						feedback: 'Fluência consolidada',
+						analise: 'Avaliação de idioma',
+					},
+				}) as never,
+			)
+			infra.jobRepository.getJob.mockResolvedValue({
+				typeInterview: 'interview',
+				evaluateLanguage: true,
+			} as never)
+
+			const result = await service.getCandidateDetails({
+				userId: USER_ID,
+				companyId: COMPANY_ID,
+				company: { id: COMPANY_ID, subscriptionPlan: 'enterprise' },
+			})
+
+			const job = result?.candidate.jobsApplied[0] as Record<string, unknown>
+
+			expect(job.evaluateLanguage).toBe(true)
+			expect(job.languageEvaluation).toEqual({
+				score: 7.8,
+				nivel: 'B2',
+				feedback: 'Fluência consolidada',
+				analise: 'Avaliação de idioma',
+			})
+
+			// Per-question language fields normalized: number preserved, strings non-null
+			const info = (job.interview as Record<string, unknown>).info as Record<string, unknown>[]
+			expect(info[0].languageScore).toBe(7.5)
+			expect(info[0].languageFeedback).toBe('Boa fluência')
+			expect(info[0].languageAnalise).toBe('Nível B2')
+		})
+
+		it('exposes evaluateLanguage=false and languageEvaluation=null when flag is absent', async () => {
+			infra.userRepository.getUser.mockResolvedValue(userData as never)
+			infra.candidateRepository.listCompanyInterviews.mockResolvedValue([finishedInterview] as never)
+			infra.candidateRepository.getJobApplied.mockResolvedValue(
+				makeJobApplied({ languageEvaluation: null }) as never,
+			)
+			infra.jobRepository.getJob.mockResolvedValue({
+				typeInterview: 'interview',
+				evaluateLanguage: false,
+			} as never)
+
+			const result = await service.getCandidateDetails({
+				userId: USER_ID,
+				companyId: COMPANY_ID,
+				company: { id: COMPANY_ID, subscriptionPlan: 'enterprise' },
+			})
+
+			const job = result?.candidate.jobsApplied[0] as Record<string, unknown>
+			expect(job.evaluateLanguage).toBe(false)
+			expect(job.languageEvaluation).toBeNull()
+		})
+	})
+
+	// Scenario 5: getPublicCandidateDetails masks languageEvaluation for non-enterprise viewer
+	describe('getPublicCandidateDetails', () => {
+		const CANDIDATE_ID = 'cand-public-1'
+		const VIEWER_COMPANY_ID = 'viewer-co-1'
+		const OTHER_COMPANY_ID = 'other-co-1'
+		const JA_ID = 'ja-public-1'
+
+		const userData = {
+			display_name: 'Ana Public',
+			email: 'ana@public.com',
+			phone_number: null,
+			photo_url: null,
+			occupation: null,
+		}
+
+		const publicInterview = {
+			id: 'pub-int-1',
+			type_interview: 'interview',
+			company_id: OTHER_COMPANY_ID,
+			score: '7.5',
+			date: new Date('2024-04-01').toISOString(),
+			name: 'Ana Public',
+			email: 'ana@public.com',
+			user_ref: { id: CANDIDATE_ID, path: `users/${CANDIDATE_ID}` },
+			job_applied_ref: {
+				id: JA_ID,
+				path: `users/${CANDIDATE_ID}/jobsApplied/${JA_ID}`,
+			},
+			job_ref: { id: 'job-other' },
+			typeInterview: 'interview',
+		}
+
+		const jobAppliedWithLanguage = {
+			id: JA_ID,
+			appliedTime: new Date('2024-04-01').toISOString(),
+			companyOwner: { id: OTHER_COMPANY_ID },
+			userApplied: { id: CANDIDATE_ID },
+			jobApplied: { id: 'job-other', path: `companies/${OTHER_COMPANY_ID}/postJob/job-other` },
+			finished: true,
+			finishedTime: new Date('2024-04-01').toISOString(),
+			isPracticing: false,
+			candidateStatus: 'pending',
+			avaliacaoFinal: null,
+			exitJobResult: null,
+			whatsappTriagemResult: null,
+			languageEvaluation: {
+				score: 7.8,
+				nivel: 'B2',
+				feedback: 'Fluência consolidada',
+				analise: 'Avaliação de idioma',
+			},
+			interview: {
+				id: 'int-1',
+				dateTime: new Date('2024-04-01').toISOString(),
+				generalFeedback: 'Bom candidato',
+				info: [{ id: 'q1', question: 'Q1', answer: 'A1', score: 8, languageScore: 7.5 }],
+				additional: [],
+				score: '7.5',
+				job: 'Dev Backend',
+				type_interview: 'interview',
+			},
+		}
+
+		beforeEach(() => {
+			infra.userRepository.getUser.mockResolvedValue(userData as never)
+			infra.candidateRepository.listPublicInterviews.mockResolvedValue([publicInterview] as never)
+			infra.candidateRepository.getJobApplied.mockResolvedValue(jobAppliedWithLanguage as never)
+			infra.companyRepository.getCompany.mockResolvedValue({ id: VIEWER_COMPANY_ID } as never)
+			infra.billingRepository.listCreditsUsed.mockResolvedValue([])
+			infra.candidateRepository.listCompanyInterviews.mockResolvedValue([])
+		})
+
+		it('strips languageEvaluation from masked job for non-enterprise viewer without credit', async () => {
+			const result = await service.getPublicCandidateDetails({
+				userId: CANDIDATE_ID,
+				company: { id: VIEWER_COMPANY_ID, subscriptionPlan: 'pro' },
+			})
+
+			expect(result).not.toBeNull()
+			const job = result!.candidate.jobsApplied[0] as Record<string, unknown>
+
+			// Hunting allowlist does NOT include languageEvaluation — must be absent
+			expect(job.languageEvaluation).toBeUndefined()
+			// Interview content is masked
+			expect((job.interview as Record<string, unknown>)?.masked).toBe(true)
+		})
+
+		it('exposes languageEvaluation for enterprise viewer (credit masking bypassed)', async () => {
+			const result = await service.getPublicCandidateDetails({
+				userId: CANDIDATE_ID,
+				company: { id: VIEWER_COMPANY_ID, subscriptionPlan: 'enterprise' },
+			})
+
+			expect(result).not.toBeNull()
+			const job = result!.candidate.jobsApplied[0] as Record<string, unknown>
+
+			expect(job.languageEvaluation).toEqual({
+				score: 7.8,
+				nivel: 'B2',
+				feedback: 'Fluência consolidada',
+				analise: 'Avaliação de idioma',
+			})
+			// Content not masked
+			expect((job.interview as Record<string, unknown>)?.masked).toBeUndefined()
+		})
+	})
+})

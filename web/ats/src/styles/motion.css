@@ -1,0 +1,98 @@
+/*
+ * Movimento do ATS — cinco primitivas, só cinco (plano E, 2026-09-04).
+ *
+ * Cada uma responde a um dado que mudou. Nenhuma existe para "dar vida"
+ * sozinha: é isso que separa isto de uma biblioteca de efeitos, onde o
+ * movimento é decoração e vira ruído em uma semana.
+ *
+ *   rise  — entrar em cascata: lista carregou ou filtrou (500ms, --d = i × 60ms)
+ *   fill  — preencher: uma etapa avançou; a régua cresce da esquerda (900ms)
+ *   lift  — levantar: hover em qualquer coisa clicável (2px, borda, sombra)
+ *   count — contar: número mudou de valor (JS em lib/motion.ts, 700ms)
+ *   land  — pousar: algo chegou num lugar novo; um anel de lime que se dissipa
+ *
+ * Tudo aqui é CSS. `prefers-reduced-motion` desliga no fim do arquivo.
+ */
+
+:root {
+	--ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--d: 0ms;
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+}
+.rise {
+	animation: rise 0.5s var(--ease-out) both;
+	animation-delay: var(--d);
+}
+
+@keyframes fill {
+	from {
+		transform: scaleX(0);
+	}
+}
+/* variante vertical (barras de distribuição): cresce do chão */
+@keyframes fill-up {
+	from {
+		transform: scaleY(0);
+	}
+}
+.fill {
+	transform-origin: left;
+	animation: fill 0.9s var(--ease-out) both;
+	animation-delay: var(--d);
+}
+
+.lift {
+	transition:
+		transform 0.18s var(--ease-out),
+		border-color 0.18s ease,
+		box-shadow 0.18s ease,
+		background-color 0.18s ease;
+}
+/* sem deslocamento: dentro de qualquer área com rolagem o cartão que sobe
+   2px tem a borda de cima cortada (Visão geral, quadro). Acende sem sair. */
+.lift:hover {
+	border-color: var(--lime-mid);
+	box-shadow: var(--shadow-pop);
+}
+
+@keyframes land {
+	0% {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--lime) 45%, transparent);
+	}
+	100% {
+		box-shadow: 0 0 0 14px transparent;
+	}
+}
+.land {
+	animation: land 0.55s var(--ease-out) both;
+}
+
+/* saída curta: o que deixa a lista afunda antes de a cascata reorganizar */
+@keyframes sink {
+	to {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+}
+.sink {
+	animation: sink 0.22s var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rise,
+	.fill,
+	.land,
+	.sink {
+		animation: none;
+	}
+	.lift,
+	.lift:hover {
+		transition: none;
+	}
+}

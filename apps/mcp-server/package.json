@@ -1,0 +1,42 @@
+{
+  "name": "mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Coploy MCP server — job discovery tools for AI assistants (ChatGPT Apps / Claude Connectors)",
+  "main": "./build/server.js",
+  "scripts": {
+    "build": "tsup src/http/server.ts --format cjs --clean --out-dir build",
+    "dev": "cross-env NODE_ENV=homolog tsx watch src/http/server.ts",
+    "dev:gcp": "cross-env NODE_ENV=homolog INFRA_PROVIDER=gcp tsx watch src/http/server.ts",
+    "dev:local": "cross-env NODE_ENV=homolog INFRA_PROVIDER=selfhosted tsx watch src/http/server.ts",
+    "start": "node build/server.js",
+    "clean": "rm -rf build .turbo",
+    "lint": "tsc --noEmit",
+    "test": "jest",
+    "test:unit": "jest"
+  },
+  "dependencies": {
+    "@coploy/domain": "*",
+    "@coploy/infra": "*",
+    "@coploy/shared": "*",
+    "@fastify/cors": "^10.1.0",
+    "@fastify/formbody": "^8.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "fastify-plugin": "^5.0.1",
+    "fastify-type-provider-zod": "^4.0.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.8.1",
+    "cross-env": "^7.0.3",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "tsup": "^8.3.6",
+    "tsx": "^4.15.2",
+    "typescript": "^5.7.0"
+  }
+}

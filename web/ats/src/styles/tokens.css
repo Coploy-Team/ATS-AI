@@ -1,0 +1,350 @@
+@import 'tailwindcss';
+@import './motion.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/**
+ * Tokens do Coploy ATS — fonte de verdade (design-fundacao §3/§5).
+ * Regra de ouro das cores de dado: são PREENCHIMENTO (barras/segmentos/dots),
+ * nunca texto. No light usam o matiz da marca levemente aprofundado; versões
+ * `-fg` existem só para quando a cor carrega texto/ícone (contraste AA).
+ */
+:root {
+	/* superfícies */
+	/* papel com um fio de verde — o mesmo matiz do escuro, para os dois temas
+	   serem o MESMO produto e não dois (decisão E1, 2026-09-04) */
+	--bg: #f5f7f2;
+	--surface: #ffffff;
+	--card: #ffffff;
+	--card-alt: #eef1ea;
+	--border: #dde2d8;
+	--border-soft: #e8ece3;
+	--hover: #f0f3ec;
+	--sel: #f3f9dd;
+
+	/* texto */
+	--text: #161a14;
+	--text-2: #4b5346;
+	--muted: #7b8476;
+
+	/* marca — lime */
+	--lime: #cdfb12; /* fill/CTA — texto por cima é sempre --lime-ink */
+	--lime-ink: #1a2005;
+	--lime-fg: #4d7c0f; /* lime como TEXTO/ícone no light */
+	--lime-mid: #a3e635; /* lime como BORDA/focus no light (a marca, visível sobre branco) */
+	--lime-soft: #eef8c8;
+	/*
+	 * Brilho de fundo do shell, por tema.
+	 *
+	 * A mesma lime pura que funciona no escuro vira mancha amarelada sobre o
+	 * branco — por isso o efeito só existia no dark.
+	 *
+	 * Três tentativas até chegar aqui, todas olhadas no navegador. A lime
+	 * FECHADA (#4d7c0f) precisa de opacidade alta para aparecer e vira borrão
+	 * cáqui atrás dos botões. A lime MÉDIA (#a3e635) num círculo sólido lê
+	 * limpa, mas pesada: o que incomoda não é a cor, é a BORDA — círculo
+	 * chapado sobre branco vira mancha com contorno, por mais desfocado que
+	 * esteja. O radial resolve dissolvendo: mesma presença, sem limite visível.
+	 *
+	 * O escuro fica no círculo sólido de sempre. Lá a lime brilha em vez de
+	 * manchar, 6% basta, e não havia nada a consertar.
+	 */
+	--glow-layer: radial-gradient(circle, #a3e635 0%, transparent 68%);
+	--glow-opacity: 0;
+
+	/* cores de dado (fills) */
+	--data-violet: #a78bfa; /* candidatura — entrada fria do funil */
+	--data-pink: #f699dc;
+	--data-cyan: #2bd9d2;
+	--data-yellow: #f5d648;
+	--data-done: #43464d; /* etapa final/contratado nas barras */
+	--data-track: #e2e4e9; /* trilho vazio */
+	/* contratado: lime fechado, pra ser o fim da escala e não competir com aprovado */
+	--lime-deep: #65a30d;
+
+	/* alertas */
+	--amber: #d97706;
+	--amber-soft: #fdf1de;
+	--danger: #dc2626;
+	--danger-soft: #fdeaea;
+
+	--shadow-card: 0 1px 2px rgba(22, 26, 20, 0.05);
+	--shadow-pop: 0 8px 24px -6px rgba(22, 26, 20, 0.16), 0 2px 6px -2px rgba(22, 26, 20, 0.08);
+}
+
+.dark {
+	/**
+	 * Preto com verde por baixo, três camadas (plano E, 2026-09-04).
+	 *
+	 * A rampa anterior era NEUTRA (oklch com chroma 0, copiada da referência
+	 * shadcn) — e era o que fazia o escuro parecer o painel de todo mundo. O
+	 * matiz da marca entra no fundo, não só no acento: ground → superfície →
+	 * card alternativo → hover, todos no mesmo tom. O "card flutuando" segue
+	 * relacional (fundo quase preto contra card um degrau acima, borda
+	 * translúcida), só que agora com a cor da casa.
+	 */
+	--bg: #0e100d;
+	--surface: #151914;
+	--card: #151914;
+	--card-alt: #1b201a;
+	--border: rgba(255, 255, 255, 0.08);
+	--border-soft: rgba(255, 255, 255, 0.05);
+	--hover: #232922;
+	--sel: #223012;
+
+	--text: #f2f4ee;
+	--text-2: #b4bcab;
+	--muted: #7a8374;
+
+	--lime: #cdfb12;
+	--lime-ink: #101a02;
+	--lime-fg: #cdfb12;
+	--lime-mid: #cdfb12;
+	--lime-soft: #2b3b0b;
+	--glow-layer: #cdfb12;
+	--glow-opacity: 0; /* o brilho do canto saiu a pedido (2026-09-04) */
+
+	--data-violet: #c4b5fd;
+	--data-pink: #f699dc;
+	--data-cyan: #60f9f4;
+	--data-yellow: #ffea83;
+	--data-done: #8f978a;
+	--data-track: #232922;
+	--lime-deep: #a3e635;
+
+	--amber: #f0b35a;
+	--amber-soft: #2e2410;
+	--danger: #ff6b6b;
+	--danger-soft: #2d1618;
+
+	--shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+	--shadow-pop: 0 14px 34px -10px rgba(0, 0, 0, 0.7), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+}
+
+@theme inline {
+	/* Urbanist no corpo, Sora onde o olho pousa (título, número, nome).
+	   É a divisão que o protótipo aprovado usa; Sora em tudo deixava todo
+	   texto do mesmo peso e sem hierarquia. */
+	--font-sans: 'Urbanist', 'Sora', system-ui, sans-serif;
+	--font-display: 'Sora', 'Urbanist', sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-card: var(--card);
+	--color-card-alt: var(--card-alt);
+	--color-border: var(--border);
+	--color-border-soft: var(--border-soft);
+	--color-hover: var(--hover);
+	--color-sel: var(--sel);
+	--color-text: var(--text);
+	--color-text-2: var(--text-2);
+	--color-muted: var(--muted);
+	--color-lime: var(--lime);
+	--color-lime-ink: var(--lime-ink);
+	--color-lime-fg: var(--lime-fg);
+	--color-lime-soft: var(--lime-soft);
+	/* faltava: sem esta linha `border-lime-mid` não existia como classe e o
+	   Tailwind caía no border-color default (preto), deixando uma borda escura
+	   em todo banner, hover de card e badge de nota */
+	--color-lime-mid: var(--lime-mid);
+	--color-data-violet: var(--data-violet);
+	--color-lime-deep: var(--lime-deep);
+	--color-data-pink: var(--data-pink);
+	--color-data-cyan: var(--data-cyan);
+	--color-data-yellow: var(--data-yellow);
+	--color-data-done: var(--data-done);
+	--color-data-track: var(--data-track);
+	--color-amber: var(--amber);
+	--color-amber-soft: var(--amber-soft);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+
+	--radius-md: 10px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+
+	--shadow-card: var(--shadow-card);
+	--shadow-pop: var(--shadow-pop);
+}
+
+html,
+body,
+#root {
+	height: 100%;
+}
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	/* 15px como o protótipo (16 lá, com mais ar); e SEM antialiased — no Mac,
+	   sobre fundo escuro, ele afina toda letra e o negrito para de parecer negrito */
+	font-size: 16px;
+	color-scheme: light;
+}
+
+.dark body {
+	color-scheme: dark;
+}
+
+/*
+ * O POPUP DO <select> no Windows.
+ *
+ * A lista de opções não é desenhada pelo navegador, é do sistema — e ela lê o
+ * `color-scheme` do elemento, não o CSS do app. Com a declaração só no `body`,
+ * o Windows abria a lista em BRANCO com texto quase invisível no tema escuro
+ * (no macOS não aparecia, que foi por isso que passou).
+ *
+ * Declarar na raiz cobre a herança, e pintar `option` explicitamente cobre o
+ * caso em que o sistema ignora o esquema e usa o próprio padrão.
+ */
+:root {
+	color-scheme: light;
+}
+
+.dark {
+	color-scheme: dark;
+}
+
+.dark select,
+.dark option {
+	background-color: var(--surface);
+	color: var(--text);
+}
+
+/* Sora com PESO: 800 no título de tela, 700 no de seção. O protótipo tem
+   partes que ficam negrito e partes que não — é o que dá hierarquia. */
+h1 {
+	font-family: var(--font-display);
+	font-weight: 800;
+	letter-spacing: -0.02em;
+}
+h2,
+h3 {
+	font-family: var(--font-display);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+strong,
+b {
+	font-weight: 700;
+}
+
+.font-num {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+/* foco visível: a assinatura lime também é acessibilidade.
+   Ring com gap da cor do fundo (não outline com offset — ficava um aro
+   grosso destacado em elementos com borda própria, ex.: busca do topbar).
+   NUNCA setar border-radius aqui — mutava o raio do elemento focado. */
+:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0 0 2px var(--bg),
+		0 0 0 4px var(--lime-mid);
+}
+
+/* Campos de texto: foco é a borda no verde DA MARCA + halo suave — sem
+   outline duplicado e sem tocar no raio (feedback do produto, 2 rounds). */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+	outline: none;
+	border-color: var(--lime-mid);
+	box-shadow: 0 0 0 3px var(--lime-soft);
+}
+
+::selection {
+	background: var(--lime);
+	color: var(--lime-ink);
+}
+
+/* scrollbar discreta no padrão do admin */
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--border);
+	border-radius: 6px;
+	border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/*
+ * O ponteiro de mão em botão.
+ *
+ * O Tailwind v4 tirou `cursor: pointer` de `button` do preflight — a decisão
+ * deles é seguir o padrão do HTML, que é seta. O efeito no produto é que todo
+ * elemento clicável perdeu o sinal de que É clicável: o cartão de candidato
+ * abria a vaga e o ponteiro não mudava, então não havia como saber que dava
+ * para clicar.
+ *
+ * Uma regra aqui vale mais que `cursor-pointer` repetido em cada componente —
+ * e o próximo botão nasce certo, em vez de nascer com o mesmo defeito.
+ */
+/*
+ * O verde brilha no escuro (Diego, 2026-09-04: "os verdes têm que brilhar
+ * mais pra destacar no preto"). Não é decoração por elemento: é regra do
+ * tema — qualquer superfície, texto ou traço em lime ganha luz própria, e
+ * no claro nada disso acontece (luz sobre papel branco só suja).
+ */
+.dark .bg-lime {
+	box-shadow: 0 0 22px -6px var(--lime), 0 0 4px -1px rgba(205, 251, 18, 0.45);
+}
+.dark .text-lime-fg,
+.dark .text-lime {
+	text-shadow: 0 0 14px rgba(205, 251, 18, 0.4);
+}
+.dark .bg-lime-soft {
+	box-shadow: inset 0 0 0 1px rgba(205, 251, 18, 0.22);
+}
+.dark .border-lime,
+.dark .border-lime-mid {
+	box-shadow: 0 0 16px -6px var(--lime);
+}
+
+@layer base {
+	/*
+	 * Tabela: a escala do sistema vale para as 8 telas que usam <table>, sem
+	 * editar cada uma. Cabeçalho em mono, caixa alta, mudo — o eyebrow do
+	 * sistema; linha com ar (padding 14px) e 14px de corpo.
+	 */
+	thead th {
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--muted);
+		font-weight: 500;
+		padding-top: 12px;
+		padding-bottom: 12px;
+	}
+	tbody td {
+		padding-top: 14px;
+		padding-bottom: 14px;
+		font-size: 14.5px;
+	}
+	button:not(:disabled),
+	[role='button']:not([aria-disabled='true']),
+	summary {
+		cursor: pointer;
+	}
+}

@@ -1,0 +1,31 @@
+name: Ideia
+description: Uma funcionalidade nova ou um jeito diferente de fazer algo
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Que problema isso resolve
+      description: Comece pela dor de quem usa, não pela solução. Quem sente? Com que frequência?
+      placeholder: "Quem recruta para várias cidades precisa filtrar candidatos por região, e hoje só dá por vaga."
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Como você imagina
+      description: A solução que você tem em mente, em uma ou duas frases. Rascunho de tela é bem-vindo.
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: O que você já tentou ou considerou
+  - type: checkboxes
+    id: escopo
+    attributes:
+      label: Escopo
+      options:
+        - label: Isso é sobre o ATS, o portal ou o MCP (não sobre o Motor de entrevista, que é plugin proprietário)
+          required: true
+        - label: Se for sobre o padrão OTS, sei que a proposta vai em Coploy-Team/ots
