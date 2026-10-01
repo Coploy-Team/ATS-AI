@@ -1,0 +1,33 @@
+name: Pedido de melhoria
+description: Algo que existe e poderia ser melhor — texto, tela, fluxo, desempenho
+labels: [enhancement]
+body:
+  - type: input
+    id: onde
+    attributes:
+      label: Onde
+      description: Tela ou rota. Ex. "ATS → Vagas → formulário, passo Descrição" ou "GET /careers/{companyId}/jobs".
+    validations:
+      required: true
+  - type: textarea
+    id: hoje
+    attributes:
+      label: Como é hoje
+    validations:
+      required: true
+  - type: textarea
+    id: melhor
+    attributes:
+      label: Como ficaria melhor
+      description: Diga o que muda para quem usa. Se souber o critério de "pronto", escreva.
+    validations:
+      required: true
+  - type: dropdown
+    id: quem
+    attributes:
+      label: Quem sente isso
+      options:
+        - Quem recruta (ATS)
+        - Quem se candidata (portal, MCP)
+        - Quem instala e mantém (compose, configuração)
+        - Quem integra (API, webhooks, OTS)

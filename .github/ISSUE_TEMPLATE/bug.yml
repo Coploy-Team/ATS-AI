@@ -1,0 +1,54 @@
+name: Bug
+description: Algo que deveria funcionar e não funciona nesta distribuição
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por abrir. Quanto mais perto do "como reproduzir", mais rápido a correção volta para cá.
+  - type: textarea
+    id: o-que
+    attributes:
+      label: O que aconteceu
+      description: O que você fez, o que esperava e o que veio.
+      placeholder: "Ao publicar uma vaga com benefícios em Markdown, a página pública mostra os asteriscos crus."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduzir
+    attributes:
+      label: Como reproduzir
+      description: Passo a passo, começando de uma instalação limpa se possível.
+      placeholder: |
+        1. docker compose -f docker-compose.open.yml up -d
+        2. Criar conta → Nova vaga → ...
+    validations:
+      required: true
+  - type: dropdown
+    id: onde
+    attributes:
+      label: Onde
+      options:
+        - ATS (web/ats)
+        - Portal público de vagas (web/careers)
+        - API (apps/core)
+        - MCP do candidato (apps/mcp-server)
+        - Instalação (docker compose, .env)
+        - Não sei
+    validations:
+      required: true
+  - type: textarea
+    id: ambiente
+    attributes:
+      label: Ambiente
+      description: Saída de `docker compose -f docker-compose.open.yml ps` e do `git log -1 --oneline`. Logs do serviço ajudam (`docker compose logs <serviço>`).
+      render: shell
+  - type: checkboxes
+    id: confere
+    attributes:
+      label: Antes de enviar
+      options:
+        - label: Conferi a tabela "Deu problema?" do README
+          required: true
+        - label: Não há dado pessoal de candidato nos logs que colei
+          required: true

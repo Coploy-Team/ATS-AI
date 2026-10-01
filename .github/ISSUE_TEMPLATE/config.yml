@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Dúvida ou conversa
+    url: https://github.com/Coploy-Team/ATS-AI/discussions
+    about: Pergunta sobre instalação, uso ou arquitetura — Discussions, não issue.
+  - name: Padrão OTS (protocolo)
+    url: https://github.com/Coploy-Team/ots
+    about: Mudança de protocolo se propõe no repositório do padrão.
+  - name: Vulnerabilidade
+    url: https://github.com/Coploy-Team/ATS-AI#segurança
+    about: Não abra issue pública — veja o canal de segurança no README.
